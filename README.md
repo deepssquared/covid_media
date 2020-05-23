@@ -1,6 +1,8 @@
 
 # Analyzing COVID-19 Media Coverage
 
+*This project was done for the Stanford 106A "Code In Plane" Final Assignment*
+
 During times of public fear, communications are instrumental in preventing adverse consequences. COVID-19 media coverage has varied worldwide, with some outlets expressing skepticism and others advising caution. This project will be utilizing exploratory data analysis and text visualizations to understand how the media coverage varied over time and by outlet. 
 
 ## Importing the Data 
