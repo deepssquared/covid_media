@@ -1,8 +1,6 @@
 
 # Analyzing COVID-19 Media Coverage
 
-*This project was done for the Stanford 106A "Code In Plane" Final Assignment*
-
 During times of public fear, communications are instrumental in preventing adverse consequences. COVID-19 media coverage has varied worldwide, with some outlets expressing skepticism and others advising caution. This project will be utilizing exploratory data analysis and text visualizations to understand how the media coverage varied over time and by outlet. 
 
 ## Importing the Data 
@@ -40,7 +38,6 @@ df.head()
 
 
 <div>
-
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -665,6 +662,8 @@ apr = df[df.month == '04']
 may = df[df.month == '05']
 ```
 
+### January Headline WordCloud
+
 
 ```python
 from wordcloud import WordCloud, STOPWORDS 
@@ -693,8 +692,10 @@ plt.show()
 ```
 
 
-![png](output_30_0.png)
+![png](output_31_0.png)
 
+
+### March Headline WordCloud
 
 
 ```python
@@ -723,5 +724,307 @@ plt.show()
 ```
 
 
-![png](output_31_0.png)
+![png](output_33_0.png)
+
+
+### May Headline WordCloud
+
+
+```python
+comment_words = '' 
+stopwords = set(STOPWORDS) 
+  
+for title in may["content"]:
+    title = str(title)
+    title_token = title.split()
+    for i in range(len(title_token)): 
+        title_token[i] = title_token[i].lower() 
+    comment_words += " ".join(title_token)+" "
+
+wordcloud = WordCloud(font_path= '/Library/Fonts/Baskerville.ttc', width = 800, height = 800,
+                      background_color ='white',
+                      stopwords = stopwords,
+                      min_font_size = 10).generate(comment_words) 
+  
+plt.figure(figsize = (8, 8), facecolor = None) 
+plt.imshow(wordcloud) 
+plt.axis("off") 
+plt.tight_layout(pad = 0) 
+  
+plt.show()
+```
+
+
+![png](output_35_0.png)
+
+
+## CNN vs. Fox News: Text Mining & Visualization
+
+Owing to the limitations I mentioned earlier, I thought it would be interesting to scrape some headlines from CNN and Fox News related to COVID-19 and compare the two. Since free WebScraper tools and API keys have limits (boo!), my datasets were on the smaller end (~200 articles per source). Here were the results: 
+
+
+```python
+import pandas as pd
+
+#Specifying the API Parameters
+headers = {'Authorization': key}
+everything_news_url = 'https://newsapi.org/v2/everything'
+everything_payload = {'q': 'coronavirus', 'sources': 'cnn','pageSize':'100', 'from':'2020-05-19', 'to':'2020-05-22','language': 'en', 'sortBy': 'relevancy'}
+response = requests.get(url=everything_news_url, headers=headers, params=everything_payload)
+
+#Converting the JSON to CSV
+response_json_string = json.dumps(response.json())
+response_dict = json.loads(response_json_string)
+articles_list = response_dict['articles']
+df = pandas.read_json(json.dumps(articles_list))
+df.to_csv('cnn_p2.csv')
+```
+
+
+```python
+fox = pd.read_json (r'foxnews.json')
+fox.to_csv (r'fox.csv', index = None)
+```
+
+
+```python
+fox = pd.read_csv('fox_cleaned.csv')
+```
+
+
+```python
+fox.head()
+```
+
+
+
+
+<div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>headline</th>
+      <th>date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>'Director of Education at Concerned Veterans ...</td>
+      <td>17 mins ago</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>'The White House on Sunday announced that the...</td>
+      <td>26 mins ago</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>'The White House announced that starting late...</td>
+      <td>30 mins ago</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>'Thousands of stir-crazy Americans have flock...</td>
+      <td>36 mins ago</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>'Former Arkansas Gov. Mike Huckabee slammed J...</td>
+      <td>1 hour ago</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+cnn_p1 = pd.read_csv('cnn_p1.csv')
+cnn_p2 = pd.read_csv('cnn_p2.csv')
+cnn = pd.concat([cnn_p1, cnn_p2], axis=0)
+```
+
+
+```python
+cnn.head()
+```
+
+
+
+
+<div>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Unnamed: 0</th>
+      <th>author</th>
+      <th>content</th>
+      <th>description</th>
+      <th>publishedAt</th>
+      <th>source</th>
+      <th>title</th>
+      <th>url</th>
+      <th>urlToImage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>NaN</td>
+      <td>Chat with us in Facebook Messenger. Find out w...</td>
+      <td>Dr. Anthony Fauci, a key member of the White H...</td>
+      <td>2020-05-22T00:44:35Z</td>
+      <td>{'id': 'cnn', 'name': 'CNN'}</td>
+      <td>Fauci is 'cautiously optimistic' about this fi...</td>
+      <td>https://www.cnn.com/videos/health/2020/05/22/f...</td>
+      <td>https://cdn.cnn.com/cnnnext/dam/assets/2005212...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>Jill Martin, CNN</td>
+      <td>NaN</td>
+      <td>Basketball Hall of Famer and Georgetown men's ...</td>
+      <td>2020-05-23T00:00:58Z</td>
+      <td>{'id': 'cnn', 'name': 'CNN'}</td>
+      <td>Basketball legend Patrick Ewing tests positive...</td>
+      <td>https://www.cnn.com/2020/05/22/us/patrick-ewin...</td>
+      <td>https://cdn.cnn.com/cnnnext/dam/assets/2005221...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2</td>
+      <td>NaN</td>
+      <td>Chat with us in Facebook Messenger. Find out w...</td>
+      <td>CNN's John King breaks down the numbers as som...</td>
+      <td>2020-05-24T12:59:37Z</td>
+      <td>{'id': 'cnn', 'name': 'CNN'}</td>
+      <td>John King breaks down progress of states reope...</td>
+      <td>https://www.cnn.com/videos/politics/2020/05/24...</td>
+      <td>https://cdn.cnn.com/cnnnext/dam/assets/2005240...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3</td>
+      <td>NaN</td>
+      <td>Chat with us in Facebook Messenger. Find out w...</td>
+      <td>CNN's Nick Paton Walsh takes us inside of an I...</td>
+      <td>2020-05-22T01:17:45Z</td>
+      <td>{'id': 'cnn', 'name': 'CNN'}</td>
+      <td>'It's startling,' CNN reporter tours mass grav...</td>
+      <td>https://www.cnn.com/videos/world/2020/05/21/br...</td>
+      <td>https://cdn.cnn.com/cnnnext/dam/assets/2005212...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4</td>
+      <td>Faith Karimi, CNN</td>
+      <td>(CNN)Two Missouri hairstylists potentially exp...</td>
+      <td>Two Missouri hairstylists potentially exposed ...</td>
+      <td>2020-05-24T05:08:31Z</td>
+      <td>{'id': 'cnn', 'name': 'CNN'}</td>
+      <td>Two hairstylists with Covid-19 served 140 clie...</td>
+      <td>https://www.cnn.com/2020/05/24/us/missouri-hai...</td>
+      <td>https://cdn.cnn.com/cnnnext/dam/assets/2005230...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+#### Fox News WordCloud
+
+
+```python
+def random_color_func(word=None, font_size=None, position=None,  orientation=None, font_path=None, random_state=None):
+    h = int(360.0 * 21.0 / 255.0)
+    s = int(100.0 * 255.0 / 255.0)
+    l = int(100.0 * float(random_state.randint(60, 120)) / 255.0)
+
+    return "hsl({}, {}%, {}%)".format(h, s, l)
+
+comment_words = '' 
+stopwords = set(STOPWORDS) 
+  
+for title in fox["headline"]:
+    title = str(title)
+    title_token = title.split()
+    for i in range(len(title_token)): 
+        title_token[i] = title_token[i].lower() 
+    comment_words += " ".join(title_token)+" "
+
+wordcloud = WordCloud(font_path= '/Library/Fonts/coolvetica rg.ttf', width = 800, height = 800,
+                      background_color ='white',
+                      stopwords = stopwords,
+                      color_func=random_color_func,
+                      min_font_size = 10).generate(comment_words) 
+  
+plt.figure(figsize = (8, 8), facecolor = None) 
+plt.imshow(wordcloud) 
+plt.axis("off") 
+plt.tight_layout(pad = 0) 
+  
+plt.show()
+```
+
+
+![png](output_45_0.png)
+
+
+#### CNN WordCloud
+
+
+```python
+def random_color_func(word=None, font_size=None, position=None,  orientation=None, font_path=None, random_state=None):
+    h = int(360.0 * 64.0 / 255.0)
+    s = int(100.0 * 255.0 / 255.0)
+    l = int(100.0 * float(random_state.randint(60, 120)) / 255.0)
+
+    return "hsl({}, {}%, {}%)".format(h, s, l)
+
+comment_words = '' 
+stopwords = set(STOPWORDS) 
+  
+for title in cnn["title"]:
+    title = str(title)
+    title_token = title.split()
+    for i in range(len(title_token)): 
+        title_token[i] = title_token[i].lower() 
+    comment_words += " ".join(title_token)+" "
+
+wordcloud = WordCloud(font_path= '/Library/Fonts/coolvetica rg.ttf', width = 800, height = 800,
+                      background_color ='white',
+                      stopwords = stopwords,
+                      color_func=random_color_func,
+                      min_font_size = 10).generate(comment_words) 
+  
+plt.figure(figsize = (8, 8), facecolor = None) 
+plt.imshow(wordcloud) 
+plt.axis("off") 
+plt.tight_layout(pad = 0) 
+  
+plt.show()
+```
+
+
+![png](output_47_0.png)
 
